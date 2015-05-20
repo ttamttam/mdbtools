@@ -174,7 +174,7 @@ MdbHandle *mdb_open(const char *filename, MdbFileFlags flags)
 {
 	MdbHandle *mdb;
 	int key[] = {0x86, 0xfb, 0xec, 0x37, 0x5d, 0x44, 0x9c, 0xfa, 0xc6, 0x5e, 0x28, 0xe6, 0x13, 0xb6};
-	int j, pos;
+	int pos;
 	int open_flags;
 
 	mdb = (MdbHandle *) g_malloc0(sizeof(MdbHandle));
@@ -263,14 +263,8 @@ MdbHandle *mdb_open(const char *filename, MdbFileFlags flags)
 	}
 
 	/* get the db password located at 0x42 bytes into the file */
-	for (pos=0;pos<14;pos++) {
-		j = mdb_get_int32(mdb->pg_buf, 0x42+pos);
-		j ^= key[pos];
-		if ( j != 0)
-			mdb->f->db_passwd[pos] = j;
-		else
-			mdb->f->db_passwd[pos] = '\0';
-	}
+	for (pos=0; pos<14; pos++)
+		mdb->f->db_passwd[pos] = mdb->pg_buf[0x42 + pos] ^ key[pos];
 
 	mdb_iconv_init(mdb);
 
